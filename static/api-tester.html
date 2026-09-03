@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exegesis API Tester</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #0b0f14;
+            color: #e8edf3;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: min(1100px, 94%);
+            margin: 30px auto;
+        }
+
+        .header {
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #8d98a5;
+        }
+
+        .card {
+            background: #111821;
+            border: 1px solid #26313d;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 18px;
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            color: #b8c2cc;
+            font-size: 14px;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            border: 1px solid #303c49;
+            background: #0b1016;
+            color: #e8edf3;
+            border-radius: 8px;
+            padding: 12px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #5b8cff;
+        }
+
+        textarea {
+            min-height: 130px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 11px 18px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            background: #2563eb;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button.secondary {
+            background: #26313d;
+        }
+
+        button.danger {
+            background: #dc2626;
+        }
+
+        button.success {
+            background: #15803d;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #8d98a5;
+        }
+
+        .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #777;
+        }
+
+        .dot.online {
+            background: #22c55e;
+        }
+
+        .dot.error {
+            background: #ef4444;
+        }
+
+        .response-box {
+            background: #080c11;
+            border: 1px solid #26313d;
+            border-radius: 10px;
+            padding: 18px;
+            min-height: 220px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.6;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+
+        .response-placeholder {
+            color: #65717d;
+        }
+
+        .metadata {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat {
+            background: #0b1016;
+            border: 1px solid #26313d;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .stat small {
+            display: block;
+            color: #687582;
+            margin-bottom: 5px;
+        }
+
+        .stat strong {
+            font-size: 15px;
+        }
+
+        .raw-response {
+            max-height: 300px;
+            overflow: auto;
+            background: #080c11;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            color: #aeb8c3;
+        }
+
+        .info {
+            background: #101b2a;
+            border: 1px solid #29466b;
+            color: #a9c7ef;
+            padding: 13px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .error {
+            color: #f87171;
+        }
+
+        .success-text {
+            color: #4ade80;
+        }
+
+        .footer {
+            text-align: center;
+            color: #596572;
+            font-size: 13px;
+            padding: 20px 0;
+        }
+
+        @media (max-width: 700px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+
+            .metadata {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .header h1 {
+                font-size: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>⚡ Exegesis API Tester</h1>
+        <p>Test your Exegesis API directly from your browser.</p>
+    </div>
+
+    <div class="info">
+        <strong>Local testing:</strong>
+        Make sure your FastAPI server is running at
+        <strong>http://127.0.0.1:8000</strong>.
+    </div>
+
+    <!-- CONNECTION -->
+    <div class="card">
+        <h2>🔐 API Configuration</h2>
+
+        <div class="form-group">
+            <label>API Base URL</label>
+            <input
+                type="text"
+                id="baseUrl"
+                value="http://127.0.0.1:8000"
+            >
+        </div>
+
+        <div class="form-group">
+            <label>Exegesis API Key</label>
+            <input
+                type="password"
+                id="apiKey"
+                placeholder="ex-..."
+            >
+        </div>
+
+        <div class="buttons">
+            <button onclick="testConnection()">
+                Test Connection
+            </button>
+
+            <button class="secondary" onclick="saveKey()">
+                Save Key Locally
+            </button>
+
+            <button class="danger" onclick="clearKey()">
+                Clear Key
+            </button>
+        </div>
+
+        <br>
+
+        <div class="status">
+            <span class="dot" id="statusDot"></span>
+            <span id="statusText">Not tested</span>
+        </div>
+    </div>
+
+    <!-- REQUEST -->
+    <div class="card">
+        <h2>💬 Chat Request</h2>
+
+        <div class="row">
+
+            <div class="form-group">
+                <label>Model</label>
+
+                <input
+                    type="text"
+                    id="model"
+                    value="openai/gpt-oss-120b"
+                >
+            </div>
+
+            <div class="form-group">
+                <label>Temperature</label>
+
+                <input
+                    type="number"
+                    id="temperature"
+                    value="0.7"
+                    min="0"
+                    max="2"
+                    step="0.1"
+                >
+            </div>
+
+        </div>
+
+        <div class="form-group">
+            <label>Prompt</label>
+
+            <textarea
+                id="prompt"
+                placeholder="Ask Exegesis anything..."
+            >Hello Exegesis! Tell me briefly what you can do.</textarea>
+        </div>
+
+        <div class="buttons">
+
+            <button
+                class="success"
+                id="sendButton"
+                onclick="sendMessage()"
+            >
+                🚀 Send Streaming Request
+            </button>
+
+            <button
+                class="secondary"
+                onclick="sendNonStreaming()"
+            >
+                Send Non-Streaming
+            </button>
+
+            <button
+                class="danger"
+                onclick="clearResponse()"
+            >
+                Clear
+            </button>
+
+        </div>
+    </div>
+
+    <!-- RESPONSE -->
+    <div class="card">
+
+        <h2>🤖 Exegesis Response</h2>
+
+        <div
+            class="response-box"
+            id="responseBox"
+        >
+            <span class="response-placeholder">
+                Response will appear here...
+            </span>
+        </div>
+
+        <div class="metadata">
+
+            <div class="stat">
+                <small>Status</small>
+                <strong id="responseStatus">—</strong>
+            </div>
+
+            <div class="stat">
+                <small>Mode</small>
+                <strong id="responseMode">—</strong>
+            </div>
+
+            <div class="stat">
+                <small>Time</small>
+                <strong id="responseTime">—</strong>
+            </div>
+
+            <div class="stat">
+                <small>Characters</small>
+                <strong id="responseCharacters">0</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- RAW -->
+    <div class="card">
+
+        <h2>📦 Raw API Response / Events</h2>
+
+        <div
+            class="raw-response"
+            id="rawResponse"
+        >
+            Nothing received yet.
+        </div>
+
+    </div>
+
+    <div class="footer">
+        Exegesis API • Local Development Tester
+    </div>
+
+</div>
+
+
+<script>
+
+const DEFAULT_BASE_URL = "http://127.0.0.1:8000";
+
+let conversation = [];
+
+
+// ============================================
+// INITIALIZATION
+// ============================================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const savedKey = localStorage.getItem("exegesis_api_key");
+
+    if (savedKey) {
+        document.getElementById("apiKey").value = savedKey;
+    }
+
+});
+
+
+// ============================================
+// HELPERS
+// ============================================
+
+function getBaseUrl() {
+
+    let url = document
+        .getElementById("baseUrl")
+        .value
+        .trim();
+
+    return url.replace(/\/+$/, "");
+
+}
+
+
+function getApiKey() {
+
+    return document
+        .getElementById("apiKey")
+        .value
+        .trim();
+
+}
+
+
+function setStatus(type, text) {
+
+    const dot = document.getElementById("statusDot");
+    const status = document.getElementById("statusText");
+
+    dot.className = "dot";
+
+    if (type === "online") {
+        dot.classList.add("online");
+    }
+
+    if (type === "error") {
+        dot.classList.add("error");
+    }
+
+    status.textContent = text;
+
+}
+
+
+function setResponseStatus(text) {
+
+    document.getElementById("responseStatus")
+        .textContent = text;
+
+}
+
+
+function clearResponse() {
+
+    document.getElementById("responseBox").innerHTML =
+        '<span class="response-placeholder">Response will appear here...</span>';
+
+    document.getElementById("rawResponse").textContent =
+        "Nothing received yet.";
+
+    document.getElementById("responseStatus").textContent = "—";
+    document.getElementById("responseMode").textContent = "—";
+    document.getElementById("responseTime").textContent = "—";
+    document.getElementById("responseCharacters").textContent = "0";
+
+}
+
+
+// ============================================
+// SAVE API KEY
+// ============================================
+
+function saveKey() {
+
+    const key = getApiKey();
+
+    if (!key) {
+        alert("Enter your Exegesis API key first.");
+        return;
+    }
+
+    localStorage.setItem(
+        "exegesis_api_key",
+        key
+    );
+
+    alert("API key saved locally in this browser.");
+
+}
+
+
+function clearKey() {
+
+    localStorage.removeItem(
+        "exegesis_api_key"
+    );
+
+    document.getElementById("apiKey").value = "";
+
+    alert("Saved API key removed.");
+
+}
+
+
+// ============================================
+// TEST CONNECTION
+// ============================================
+
+async function testConnection() {
+
+    const baseUrl = getBaseUrl();
+
+    setStatus(
+        "",
+        "Testing connection..."
+    );
+
+    try {
+
+        const start = performance.now();
+
+        const response = await fetch(
+            `${baseUrl}/health`
+        );
+
+        const elapsed =
+            Math.round(performance.now() - start);
+
+        if (!response.ok) {
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+        }
+
+        const data = await response.json();
+
+        setStatus(
+            "online",
+            `API online • ${elapsed} ms`
+        );
+
+        document.getElementById("rawResponse")
+            .textContent =
+            JSON.stringify(data, null, 2);
+
+    } catch (error) {
+
+        setStatus(
+            "error",
+            "Connection failed"
+        );
+
+        document.getElementById("rawResponse")
+            .textContent =
+            error.message;
+
+    }
+
+}
+
+
+// ============================================
+// VALIDATE CONFIG
+// ============================================
+
+function validateConfig() {
+
+    const apiKey = getApiKey();
+
+    if (!apiKey) {
+
+        alert(
+            "Enter your Exegesis API key first."
+        );
+
+        return false;
+
+    }
+
+    return true;
+
+}
+
+
+// ============================================
+// STREAMING REQUEST
+// ============================================
+
+async function sendMessage() {
+
+    if (!validateConfig()) {
+        return;
+    }
+
+    const baseUrl = getBaseUrl();
+    const apiKey = getApiKey();
+
+    const prompt =
+        document.getElementById("prompt")
+            .value
+            .trim();
+
+    const model =
+        document.getElementById("model")
+            .value
+            .trim();
+
+    const temperature =
+        parseFloat(
+            document.getElementById("temperature").value
+        );
+
+
+    if (!prompt) {
+
+        alert("Enter a prompt.");
+
+        return;
+
+    }
+
+
+    const responseBox =
+        document.getElementById("responseBox");
+
+    const rawBox =
+        document.getElementById("rawResponse");
+
+    const sendButton =
+        document.getElementById("sendButton");
+
+
+    responseBox.textContent = "";
+
+    rawBox.textContent = "";
+
+    sendButton.disabled = true;
+
+    setResponseStatus("Connecting...");
+    document.getElementById("responseMode")
+        .textContent = "Streaming";
+
+
+    conversation.push({
+        role: "user",
+        content: prompt
+    });
+
+
+    const requestBody = {
+
+        messages: conversation,
+
+        model: model,
+
+        temperature: temperature,
+
+        max_tokens: 2048
+
+    };
+
+
+    const startTime = performance.now();
+
+    let fullResponse = "";
+
+
+    try {
+
+        const response = await fetch(
+            `${baseUrl}/v1/chat/completions`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Authorization":
+                        `Bearer ${apiKey}`,
+
+                    "Content-Type":
+                        "application/json",
+
+                    "Accept":
+                        "text/event-stream"
+                },
+
+                body: JSON.stringify(
+                    requestBody
+                )
+            }
+        );
+
+
+        if (!response.ok) {
+
+            const errorText =
+                await response.text();
+
+            throw new Error(
+                `HTTP ${response.status}: ${errorText}`
+            );
+
+        }
+
+
+        setResponseStatus(
+            `${response.status} OK`
+        );
+
+
+        if (!response.body) {
+
+            throw new Error(
+                "Browser does not support streaming responses."
+            );
+
+        }
+
+
+        const reader =
+            response.body.getReader();
+
+        const decoder =
+            new TextDecoder("utf-8");
+
+        let buffer = "";
+
+
+        while (true) {
+
+            const {
+                value,
+                done
+            } = await reader.read();
+
+
+            if (done) {
+                break;
+            }
+
+
+            buffer += decoder.decode(
+                value,
+                { stream: true }
+            );
+
+
+            const events =
+                buffer.split("\n\n");
+
+
+            buffer =
+                events.pop() || "";
+
+
+            for (const event of events) {
+
+                const lines =
+                    event.split("\n");
+
+
+                for (const line of lines) {
+
+                    if (!line.startsWith("data:")) {
+                        continue;
+                    }
+
+
+                    const data =
+                        line.slice(5).trim();
+
+
+                    rawBox.textContent +=
+                        data + "\n";
+
+
+                    if (data === "[DONE]") {
+                        continue;
+                    }
+
+
+                    try {
+
+                        const parsed =
+                            JSON.parse(data);
+
+
+                        const delta =
+                            parsed
+                                ?.choices?.[0]
+                                ?.delta
+                                ?.content;
+
+
+                        if (delta) {
+
+                            fullResponse += delta;
+
+                            responseBox.textContent =
+                                fullResponse;
+
+                            document.getElementById(
+                                "responseCharacters"
+                            ).textContent =
+                                fullResponse.length;
+
+                        }
+
+                    } catch (error) {
+
+                        console.warn(
+                            "Could not parse SSE event:",
+                            data
+                        );
+
+                    }
+
+                }
+
+            }
+
+        }
+
+
+        const elapsed =
+            Math.round(
+                performance.now() - startTime
+            );
+
+
+        document.getElementById(
+            "responseTime"
+        ).textContent =
+            `${elapsed} ms`;
+
+
+        conversation.push({
+            role: "assistant",
+            content: fullResponse
+        });
+
+
+        setStatus(
+            "online",
+            "Streaming completed"
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        setResponseStatus("Error");
+
+        responseBox.innerHTML =
+            `<span class="error">${escapeHtml(
+                error.message
+            )}</span>`;
+
+        rawBox.textContent =
+            error.stack || error.message;
+
+        setStatus(
+            "error",
+            "Request failed"
+        );
+
+    } finally {
+
+        sendButton.disabled = false;
+
+    }
+
+}
+
+
+// ============================================
+// NON-STREAMING REQUEST
+// ============================================
+
+async function sendNonStreaming() {
+
+    if (!validateConfig()) {
+        return;
+    }
+
+    const baseUrl = getBaseUrl();
+    const apiKey = getApiKey();
+
+    const prompt =
+        document.getElementById("prompt")
+            .value
+            .trim();
+
+    const model =
+        document.getElementById("model")
+            .value
+            .trim();
+
+    const temperature =
+        parseFloat(
+            document.getElementById("temperature").value
+        );
+
+
+    if (!prompt) {
+
+        alert("Enter a prompt.");
+
+        return;
+
+    }
+
+
+    const responseBox =
+        document.getElementById("responseBox");
+
+    const rawBox =
+        document.getElementById("rawResponse");
+
+
+    responseBox.textContent =
+        "Waiting for response...";
+
+    rawBox.textContent = "";
+
+    setResponseStatus("Sending...");
+    document.getElementById("responseMode")
+        .textContent = "Non-streaming";
+
+
+    const startTime =
+        performance.now();
+
+
+    const requestMessages = [
+        ...conversation,
+        {
+            role: "user",
+            content: prompt
+        }
+    ];
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${baseUrl}/v1/chat/completions/sync`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Authorization":
+                            `Bearer ${apiKey}`,
+
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        messages:
+                            requestMessages,
+
+                        model:
+                            model,
+
+                        temperature:
+                            temperature,
+
+                        max_tokens:
+                            2048
+
+                    })
+                }
+            );
+
+
+        const rawText =
+            await response.text();
+
+
+        rawBox.textContent =
+            rawText;
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `HTTP ${response.status}: ${rawText}`
+            );
+
+        }
+
+
+        const data =
+            JSON.parse(rawText);
+
+
+        responseBox.textContent =
+            data.content || "";
+
+
+        conversation.push({
+            role: "user",
+            content: prompt
+        });
+
+
+        conversation.push({
+            role: "assistant",
+            content: data.content || ""
+        });
+
+
+        const elapsed =
+            Math.round(
+                performance.now() -
+                startTime
+            );
+
+
+        document.getElementById(
+            "responseTime"
+        ).textContent =
+            `${elapsed} ms`;
+
+
+        document.getElementById(
+            "responseCharacters"
+        ).textContent =
+            (data.content || "").length;
+
+
+        setResponseStatus(
+            `${response.status} OK`
+        );
+
+
+        setStatus(
+            "online",
+            "Request completed"
+        );
+
+
+    } catch (error) {
+
+        responseBox.innerHTML =
+            `<span class="error">${escapeHtml(
+                error.message
+            )}</span>`;
+
+        setResponseStatus(
+            "Error"
+        );
+
+        setStatus(
+            "error",
+            "Request failed"
+        );
+
+    }
+
+}
+
+
+// ============================================
+// ESCAPE HTML
+// ============================================
+
+function escapeHtml(text) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+
+}
+
+
+// ============================================
+// CTRL + ENTER
+// ============================================
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (
+            event.ctrlKey &&
+            event.key === "Enter"
+        ) {
+
+            sendMessage();
+
+        }
+
+    }
+);
+
+</script>
+
+</body>
+</html>

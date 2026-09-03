@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Exegesis – Developer Dashboard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f6f8fa;
+            padding: 2rem;
+            color: #24292e;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+        .subtitle { color: #586069; margin-bottom: 2rem; }
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; font-weight: 600; margin-bottom: 0.3rem; }
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid #d1d5da;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        button {
+            background: #2ea44f;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background: #22863a; }
+        button.danger { background: #d73a49; }
+        button.danger:hover { background: #b31d28; }
+        .auth-toggle { margin-top: 1rem; }
+        .auth-toggle a { color: #0366d6; cursor: pointer; text-decoration: underline; }
+        .hidden { display: none; }
+        .key-list { margin-top: 2rem; }
+        .key-item {
+            background: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .key-info { flex: 1; }
+        .key-info .key-value {
+            font-family: monospace;
+            background: #e1e4e8;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+        .key-info .meta { font-size: 0.8rem; color: #586069; margin-top: 0.2rem; }
+        .key-actions button { margin-left: 0.5rem; }
+        .alert { padding: 0.8rem; border-radius: 6px; margin-bottom: 1rem; }
+        .alert-success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .alert-error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .flex-row { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+        #logoutBtn { margin-left: auto; background: #6c757d; }
+        #logoutBtn:hover { background: #5a6268; }
+        .copy-btn { background: #f0f0f0; color: #24292e; border: 1px solid #d1d5da; padding: 0.2rem 0.6rem; font-size: 0.8rem; }
+        .copy-btn:hover { background: #e1e4e8; }
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>🔮 Exegesis</h1>
+        <button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
+    </div>
+    <p class="subtitle">Your AI infrastructure – generate API keys for your apps</p>
+
+    <div id="authSection">
+        <div id="loginForm">
+            <h2>Login</h2>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="you@example.com" />
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="••••••••" />
+            </div>
+            <button onclick="login()">Login</button>
+            <div class="auth-toggle">
+                Don't have an account? <a onclick="showRegister()">Register</a>
+            </div>
+            <div id="loginMessage"></div>
+        </div>
+
+        <div id="registerForm" class="hidden">
+            <h2>Register</h2>
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="regName" placeholder="John Doe" />
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="regEmail" placeholder="you@example.com" />
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="regPassword" placeholder="Choose a strong password" />
+            </div>
+            <button onclick="register()">Register</button>
+            <div class="auth-toggle">
+                Already have an account? <a onclick="showLogin()">Login</a>
+            </div>
+            <div id="registerMessage"></div>
+        </div>
+    </div>
+
+    <div id="dashboardSection" class="hidden">
+        <div class="flex-row" style="margin-bottom: 1.5rem;">
+            <input type="text" id="newKeyName" placeholder="Optional: key name" style="flex:1;" />
+            <button onclick="generateKey()">+ Generate New Key</button>
+        </div>
+        <div id="keyList" class="key-list">
+            <p>Loading your keys...</p>
+        </div>
+        <div id="dashboardMessage"></div>
+    </div>
+</div>
+
+<script>
+    function getToken() { return localStorage.getItem('access_token'); }
+    function setToken(token) { localStorage.setItem('access_token', token); }
+    function clearToken() { localStorage.removeItem('access_token'); }
+
+    function apiRequest(method, url, body = null, auth = true) {
+        const headers = { 'Content-Type': 'application/json' };
+        if (auth) {
+            const token = getToken();
+            if (!token) throw new Error('No token');
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        const options = { method, headers };
+        if (body) options.body = JSON.stringify(body);
+        return fetch(url, options).then(res => {
+            if (!res.ok) return res.json().then(err => { throw new Error(err.detail || 'Request failed'); });
+            return res.json();
+        });
+    }
+
+    function showMessage(containerId, msg, isError = false) {
+        const el = document.getElementById(containerId);
+        if (!msg) { el.innerHTML = ''; el.className = ''; return; }
+        el.innerHTML = msg;
+        el.className = 'alert ' + (isError ? 'alert-error' : 'alert-success');
+    }
+
+    function showRegister() {
+        document.getElementById('loginForm').classList.add('hidden');
+        document.getElementById('registerForm').classList.remove('hidden');
+        showMessage('loginMessage', '');
+        showMessage('registerMessage', '');
+    }
+
+    function showLogin() {
+        document.getElementById('registerForm').classList.add('hidden');
+        document.getElementById('loginForm').classList.remove('hidden');
+        showMessage('loginMessage', '');
+        showMessage('registerMessage', '');
+    }
+
+    async function register() {
+        const name = document.getElementById('regName').value;
+        const email = document.getElementById('regEmail').value;
+        const password = document.getElementById('regPassword').value;
+        if (!email || !password) {
+            showMessage('registerMessage', 'Email and password required', true);
+            return;
+        }
+        try {
+            await apiRequest('POST', '/auth/register', { email, password, name }, false);
+            showMessage('registerMessage', 'Registration successful! Please login.');
+            document.getElementById('regEmail').value = '';
+            document.getElementById('regPassword').value = '';
+            document.getElementById('regName').value = '';
+            showLogin();
+        } catch (err) {
+            showMessage('registerMessage', err.message, true);
+        }
+    }
+
+    async function login() {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        if (!email || !password) {
+            showMessage('loginMessage', 'Email and password required', true);
+            return;
+        }
+        const formData = new URLSearchParams({ username: email, password });
+        try {
+            const resp = await fetch('/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            });
+            if (!resp.ok) {
+                const err = await resp.json();
+                throw new Error(err.detail || 'Login failed');
+            }
+            const data = await resp.json();
+            setToken(data.access_token);
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+            showMessage('loginMessage', '');
+            loadKeys();
+        } catch (err) {
+            showMessage('loginMessage', err.message, true);
+        }
+    }
+
+    function logout() {
+        clearToken();
+        document.getElementById('authSection').classList.remove('hidden');
+        document.getElementById('dashboardSection').classList.add('hidden');
+        document.getElementById('logoutBtn').classList.add('hidden');
+        document.getElementById('loginEmail').value = '';
+        document.getElementById('loginPassword').value = '';
+        showMessage('loginMessage', '');
+        showMessage('dashboardMessage', '');
+    }
+
+    async function loadKeys() {
+        const container = document.getElementById('keyList');
+        try {
+            const keys = await apiRequest('GET', '/keys');
+            if (keys.length === 0) {
+                container.innerHTML = '<p>No API keys yet. Generate one above.</p>';
+                return;
+            }
+            let html = '';
+            keys.forEach(k => {
+                const active = k.active ? '✅ Active' : '❌ Revoked';
+                const lastUsed = k.last_used ? new Date(k.last_used).toLocaleString() : 'Never';
+                html += `
+                    <div class="key-item">
+                        <div class="key-info">
+                            <div class="key-value">${k.key}</div>
+                            <div class="meta">
+                                ${k.name ? `Name: ${k.name} · ` : ''}
+                                Created: ${new Date(k.created_at).toLocaleString()} · 
+                                Last used: ${lastUsed} · 
+                                ${active}
+                            </div>
+                        </div>
+                        <div class="key-actions">
+                            <button class="copy-btn" onclick="copyKey('${k.key}')">Copy</button>
+                            ${k.active ? `<button class="danger" onclick="revokeKey('${k.id}')">Revoke</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            showMessage('dashboardMessage', '');
+        } catch (err) {
+            showMessage('dashboardMessage', 'Failed to load keys: ' + err.message, true);
+        }
+    }
+
+    async function generateKey() {
+        const name = document.getElementById('newKeyName').value.trim() || null;
+        try {
+            const result = await apiRequest('POST', '/keys/generate', { name });
+            showMessage('dashboardMessage', `✅ Key generated: ${result.key}`, false);
+            document.getElementById('newKeyName').value = '';
+            loadKeys();
+        } catch (err) {
+            showMessage('dashboardMessage', 'Error: ' + err.message, true);
+        }
+    }
+
+    async function revokeKey(keyId) {
+        if (!confirm('Revoke this key? It will stop working immediately.')) return;
+        try {
+            await apiRequest('DELETE', `/keys/${keyId}`);
+            showMessage('dashboardMessage', 'Key revoked successfully.', false);
+            loadKeys();
+        } catch (err) {
+            showMessage('dashboardMessage', 'Error: ' + err.message, true);
+        }
+    }
+
+    function copyKey(key) {
+        navigator.clipboard.writeText(key).then(() => {
+            showMessage('dashboardMessage', 'Copied to clipboard!', false);
+            setTimeout(() => showMessage('dashboardMessage', ''), 2000);
+        }).catch(() => alert('Could not copy.'));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = getToken();
+        if (token) {
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+            loadKeys();
+        }
+    });
+</script>
+</body>
+</html>

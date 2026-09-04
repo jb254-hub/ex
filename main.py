@@ -1,4 +1,4 @@
-cat > main.py << 'EOF'
+
 import os
 import json
 import secrets

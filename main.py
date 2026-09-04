@@ -1,3 +1,4 @@
+cat > main.py << 'EOF'
 import os
 import json
 import secrets
@@ -30,6 +31,7 @@ from fastapi.security import (
     OAuth2PasswordRequestForm,
 )
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic import BaseModel, EmailStr
 from jose import JWTError, jwt
@@ -721,7 +723,6 @@ async def lifespan(app: FastAPI):
         "🛑 Exegesis API stopped"
     )
 
-
 # ============================================================
 # FASTAPI APP
 # ============================================================
@@ -740,6 +741,15 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+from fastapi.middleware.cors import CORSMiddleware   
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],      
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 if os.path.isdir("static"):
 
@@ -1571,6 +1581,7 @@ if __name__ == "__main__":
 
         port=8000,
 
-        reload=False
+        reload=True
     )
 
+EOF

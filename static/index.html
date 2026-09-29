@@ -1,323 +1,1139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Exegesis – Developer Dashboard</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f6f8fa;
-            padding: 2rem;
-            color: #24292e;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-        h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
-        .subtitle { color: #586069; margin-bottom: 2rem; }
-        .form-group { margin-bottom: 1.2rem; }
-        label { display: block; font-weight: 600; margin-bottom: 0.3rem; }
-        input[type="text"], input[type="email"], input[type="password"] {
-            width: 100%;
-            padding: 0.6rem 0.8rem;
-            border: 1px solid #d1d5da;
-            border-radius: 6px;
-            font-size: 1rem;
-        }
-        button {
-            background: #2ea44f;
-            color: white;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 6px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        button:hover { background: #22863a; }
-        button.danger { background: #d73a49; }
-        button.danger:hover { background: #b31d28; }
-        .auth-toggle { margin-top: 1rem; }
-        .auth-toggle a { color: #0366d6; cursor: pointer; text-decoration: underline; }
-        .hidden { display: none; }
-        .key-list { margin-top: 2rem; }
-        .key-item {
-            background: #f6f8fa;
-            border: 1px solid #e1e4e8;
-            border-radius: 6px;
-            padding: 0.8rem 1rem;
-            margin-bottom: 0.8rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .key-info { flex: 1; }
-        .key-info .key-value {
-            font-family: monospace;
-            background: #e1e4e8;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            word-break: break-all;
-        }
-        .key-info .meta { font-size: 0.8rem; color: #586069; margin-top: 0.2rem; }
-        .key-actions button { margin-left: 0.5rem; }
-        .alert { padding: 0.8rem; border-radius: 6px; margin-bottom: 1rem; }
-        .alert-success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
-        .alert-error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
-        .flex-row { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
-        #logoutBtn { margin-left: auto; background: #6c757d; }
-        #logoutBtn:hover { background: #5a6268; }
-        .copy-btn { background: #f0f0f0; color: #24292e; border: 1px solid #d1d5da; padding: 0.2rem 0.6rem; font-size: 0.8rem; }
-        .copy-btn:hover { background: #e1e4e8; }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Exegesis · Developer Dashboard</title>
+<style>
+  :root {
+    --bg: #f6f8fb;
+    --surface: #ffffff;
+    --surface-subtle: #fbfcfe;
+    --border: #e4e8ee;
+    --border-strong: #cbd5e1;
+    --text: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #6b7688;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-soft: rgba(37, 99, 235, .14);
+    --danger: #dc2626;
+    --danger-hover: #b91c1c;
+    --success: #15803d;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, .05);
+    --shadow-md: 0 12px 32px -16px rgba(15, 23, 42, .18);
+    --shadow-lg: 0 24px 48px -12px rgba(15, 23, 42, .35);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  [hidden] { display: none !important; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+
+  /* ---------- Header ---------- */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: rgba(255, 255, 255, .88);
+    backdrop-filter: saturate(180%) blur(8px);
+    -webkit-backdrop-filter: saturate(180%) blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .site-header__inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text);
+  }
+  .brand__mark {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+  .brand__name {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+  }
+
+  /* ---------- Layout ---------- */
+  .page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 24px 96px;
+  }
+
+  /* ---------- Cards ---------- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .card--auth {
+    width: 100%;
+    max-width: 420px;
+    padding: 32px;
+  }
+  .card__title {
+    margin: 0 0 6px;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -.02em;
+  }
+  .card__subtitle {
+    margin: 0 0 24px;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  .card__section { padding: 24px; }
+  .card__section + .card__section { border-top: 1px solid var(--border); }
+
+  .auth { display: flex; justify-content: center; }
+
+  /* ---------- Forms ---------- */
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+  }
+  .input {
+    width: 100%;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 15px;
+    color: inherit;
+    background: #fff;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .input::placeholder { color: #94a3b8; }
+  .input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-soft);
+  }
+  .input:disabled { background: #f8fafc; color: var(--text-muted); }
+
+  .form-footer {
+    margin: 18px 0 0;
+    font-size: 14px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+  .link-btn {
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    font-weight: 600;
+    color: var(--primary);
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .link-btn:hover { text-decoration: underline; }
+  .link-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--text);
+    background: #fff;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
+  }
+  .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .btn:disabled { opacity: .55; cursor: not-allowed; }
+
+  .btn--primary { background: var(--primary); color: #fff; }
+  .btn--primary:hover:not(:disabled) { background: var(--primary-hover); }
+
+  .btn--ghost { background: #fff; border-color: var(--border-strong); color: #334155; }
+  .btn--ghost:hover:not(:disabled) { background: #f8fafc; border-color: #94a3b8; }
+
+  .btn--danger { background: #fff; border-color: #fecaca; color: var(--danger); }
+  .btn--danger:hover:not(:disabled) { background: #fef2f2; border-color: #fca5a5; }
+
+  .btn--danger-solid { background: var(--danger); color: #fff; }
+  .btn--danger-solid:hover:not(:disabled) { background: var(--danger-hover); }
+
+  .btn--block { width: 100%; }
+  .btn--sm { padding: 6px 12px; font-size: 13px; border-radius: 7px; }
+
+  /* ---------- Alerts ---------- */
+  .alert {
+    margin-top: 16px;
+    padding: 11px 14px;
+    font-size: 14px;
+    line-height: 1.45;
+    border: 1px solid transparent;
+    border-radius: 8px;
+  }
+  .alert--error { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+  .alert--success { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+
+  /* ---------- Dashboard ---------- */
+  .page-head { margin-bottom: 24px; }
+  .page-head__title {
+    margin: 0 0 6px;
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -.02em;
+  }
+  .page-head__subtitle {
+    margin: 0;
+    max-width: 560px;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+
+  .section-title {
+    margin: 0 0 14px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -.005em;
+  }
+  .list-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .list-head .section-title { margin: 0; }
+
+  .create-key { display: flex; gap: 10px; }
+  .create-key .input { flex: 1; min-width: 0; }
+
+  /* ---------- Key list ---------- */
+  .key-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .key-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    background: var(--surface-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .key-row:hover { background: #fff; border-color: #d7dee7; }
+
+  .key-row__main { flex: 1; min-width: 0; }
+  .key-row__top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .key-row__name {
+    font-size: 14px;
+    font-weight: 600;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .key-row__value {
+    display: inline-block;
+    max-width: 100%;
+    padding: 3px 8px;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    background: #f1f5f9;
+    border: 1px solid #e6ebf1;
+    border-radius: 6px;
+    word-break: break-all;
+  }
+  .key-row__meta {
+    margin-top: 8px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .key-row__actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 9px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .badge__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .badge--active { background: #f0fdf4; border-color: #bbf7d0; color: var(--success); }
+  .badge--revoked { background: #f8fafc; border-color: #e2e8f0; color: var(--text-muted); }
+
+  /* ---------- Empty & loading states ---------- */
+  .empty {
+    padding: 40px 20px;
+    text-align: center;
+    background: var(--surface-subtle);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+  }
+  .empty__title { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+  .empty__text { margin: 0; font-size: 13.5px; color: var(--text-muted); }
+
+  .skeleton-row {
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .skeleton {
+    border-radius: 6px;
+    background: linear-gradient(90deg, #eef2f6 25%, #f7f9fb 37%, #eef2f6 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.4s ease infinite;
+  }
+  .skeleton--lg { height: 13px; width: 38%; margin-bottom: 12px; }
+  .skeleton--sm { height: 11px; width: 62%; }
+  @keyframes shimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: 0 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton { animation: none; }
+    * { transition-duration: .01ms !important; }
+  }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    z-index: 60;
+    max-width: calc(100vw - 32px);
+    padding: 11px 18px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    background: #0f172a;
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, 12px);
+    transition: opacity .2s ease, transform .2s ease, visibility .2s;
+  }
+  .toast.is-visible { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+  .toast--error { background: #991b1b; }
+
+  /* ---------- Modal ---------- */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(15, 23, 42, .45);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .18s ease, visibility .18s;
+  }
+  .modal-backdrop.is-open { opacity: 1; visibility: visible; }
+  .modal {
+    width: 100%;
+    max-width: 420px;
+    padding: 24px;
+    background: #fff;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(8px) scale(.98);
+    transition: transform .18s ease;
+  }
+  .modal-backdrop.is-open .modal { transform: none; }
+  .modal__title { margin: 0 0 8px; font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+  .modal__text { margin: 0 0 22px; font-size: 14px; line-height: 1.55; color: var(--text-secondary); }
+  .modal__actions { display: flex; justify-content: flex-end; gap: 10px; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 640px) {
+    .page { padding: 28px 16px 72px; }
+    .site-header__inner { padding: 0 16px; }
+    .card--auth { padding: 24px; }
+    .card__section { padding: 20px; }
+    .key-row { flex-direction: column; align-items: stretch; }
+    .key-row__actions { flex-wrap: wrap; }
+  }
+  @media (max-width: 520px) {
+    .create-key { flex-direction: column; }
+    .create-key .btn { width: 100%; }
+    .page-head__title { font-size: 21px; }
+  }
+</style>
 </head>
 <body>
-<div class="container" id="app">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h1>Exegesis</h1>
-        <button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
-    </div>
-    <p class="subtitle">Your AI infrastructure – generate API keys for your apps</p>
 
-    <div id="authSection">
-        <div id="loginForm">
-            <h2>Login</h2>
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="loginEmail" placeholder="you@example.com" />
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="loginPassword" placeholder="••••••••" />
-            </div>
-            <button onclick="login()">Login</button>
-            <div class="auth-toggle">
-                Don't have an account? <a onclick="showRegister()">Register</a>
-            </div>
-            <div id="loginMessage"></div>
+<header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">E</span>
+      <span class="brand__name"></span>
+    </a>
+    <button id="logoutBtn" class="btn btn--ghost btn--sm" type="button" hidden>Sign out</button>
+  </div>
+</header>
+
+<main class="page">
+
+  <!-- ============ Authentication ============ -->
+  <section id="authView" class="auth">
+    <div class="card card--auth">
+
+      <!-- Sign in -->
+      <form id="loginForm" novalidate>
+        <h1 class="card__title">Sign in</h1>
+        <p class="card__subtitle">Access your dashboard to manage API keys.</p>
+
+        <div class="field">
+          <label for="loginEmail">Email</label>
+          <input class="input" type="email" id="loginEmail" name="email"
+                 placeholder="you@example.com" autocomplete="email" required />
         </div>
 
-        <div id="registerForm" class="hidden">
-            <h2>Register</h2>
-            <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" id="regName" placeholder="username" />
-            </div>
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="regEmail" placeholder="you@example.com" />
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="regPassword" placeholder="Choose a strong password" />
-            </div>
-            <button onclick="register()">Register</button>
-            <div class="auth-toggle">
-                Already have an account? <a onclick="showLogin()">Login</a>
-            </div>
-            <div id="registerMessage"></div>
+        <div class="field">
+          <label for="loginPassword">Password</label>
+          <input class="input" type="password" id="loginPassword" name="password"
+                 placeholder="Enter your password" autocomplete="current-password" required />
         </div>
+
+        <div class="alert alert--error" id="loginMessage" role="alert" hidden></div>
+
+        <button class="btn btn--primary btn--block" type="submit" id="loginSubmit"
+                style="margin-top: 20px;">Sign in</button>
+
+        <p class="form-footer">
+          Don't have an account?
+          <button type="button" class="link-btn" onclick="showRegister()">Create one</button>
+        </p>
+      </form>
+
+      <!-- Register -->
+      <form id="registerForm" novalidate hidden>
+        <h1 class="card__title">Create your account</h1>
+        <p class="card__subtitle">Start generating API keys in under a minute.</p>
+
+        <div class="field">
+          <label for="regName">Full name <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+          <input class="input" type="text" id="regName" name="name"
+                 placeholder="Jane Doe" autocomplete="name" />
+        </div>
+
+        <div class="field">
+          <label for="regEmail">Email</label>
+          <input class="input" type="email" id="regEmail" name="email"
+                 placeholder="you@example.com" autocomplete="email" required />
+        </div>
+
+        <div class="field">
+          <label for="regPassword">Password</label>
+          <input class="input" type="password" id="regPassword" name="password"
+                 placeholder="At least 8 characters" autocomplete="new-password" required />
+        </div>
+
+        <div class="alert alert--error" id="registerMessage" role="alert" hidden></div>
+
+        <button class="btn btn--primary btn--block" type="submit" id="registerSubmit"
+                style="margin-top: 20px;">Create account</button>
+
+        <p class="form-footer">
+          Already have an account?
+          <button type="button" class="link-btn" onclick="showLogin()">Sign in</button>
+        </p>
+      </form>
+
+    </div>
+  </section>
+
+  <!-- ============ Dashboard ============ -->
+  <section id="dashboardView" hidden>
+    <div class="page-head">
+      <h1 class="page-head__title">API keys</h1>
+      <p class="page-head__subtitle">
+        Manage the credentials your applications use to authenticate with Exegesis.
+        Keep them secret and revoke any key you no longer trust.
+      </p>
     </div>
 
-    <div id="dashboardSection" class="hidden">
-        <div class="flex-row" style="margin-bottom: 1.5rem;">
-            <input type="text" id="newKeyName" placeholder="Optional: key name" style="flex:1;" />
-            <button onclick="generateKey()">+ Generate New Key</button>
+    <div class="card">
+
+      <div class="card__section">
+        <h2 class="section-title">Create a new key</h2>
+        <form id="createKeyForm" class="create-key" novalidate>
+          <label class="sr-only" for="newKeyName">Key name</label>
+          <input class="input" type="text" id="newKeyName" maxlength="60"
+                 placeholder="Key name (optional) — e.g. Production server" />
+          <button class="btn btn--primary" type="submit" id="generateBtn">Generate key</button>
+        </form>
+        <div class="alert alert--error" id="dashboardMessage" role="alert" hidden></div>
+      </div>
+
+      <div class="card__section">
+        <div class="list-head">
+          <h2 class="section-title">Your keys</h2>
+          <button class="btn btn--ghost btn--sm" type="button" id="refreshBtn">Refresh</button>
         </div>
-        <div id="keyList" class="key-list">
-            <p>Loading your keys...</p>
-        </div>
-        <div id="dashboardMessage"></div>
+        <div id="keyList" class="key-list" aria-live="polite"></div>
+      </div>
+
     </div>
+  </section>
+
+</main>
+
+<!-- Toast -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Revoke confirmation -->
+<div class="modal-backdrop" id="revokeModal" role="presentation">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="revokeModalTitle">
+    <h2 class="modal__title" id="revokeModalTitle">Revoke this API key?</h2>
+    <p class="modal__text">
+      <strong id="revokeKeyName">This key</strong> will stop working immediately.
+      Any application still using it will lose access. This action cannot be undone.
+    </p>
+    <div class="modal__actions">
+      <button class="btn btn--ghost" type="button" id="revokeCancel">Cancel</button>
+      <button class="btn btn--danger-solid" type="button" id="revokeConfirm">Revoke key</button>
+    </div>
+  </div>
 </div>
 
 <script>
-    function getToken() { return localStorage.getItem('access_token'); }
-    function setToken(token) { localStorage.setItem('access_token', token); }
-    function clearToken() { localStorage.removeItem('access_token'); }
+(function () {
+  'use strict';
 
-    function apiRequest(method, url, body = null, auth = true) {
-        const headers = { 'Content-Type': 'application/json' };
-        if (auth) {
-            const token = getToken();
-            if (!token) throw new Error('No token');
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-        const options = { method, headers };
-        if (body) options.body = JSON.stringify(body);
-        return fetch(url, options).then(res => {
-            if (!res.ok) return res.json().then(err => { throw new Error(err.detail || 'Request failed'); });
-            return res.json();
+  /* ------------------------------------------------------------------ *
+   *  State & token helpers
+   * ------------------------------------------------------------------ */
+  var TOKEN_KEY = 'access_token';
+  var currentKeys = [];
+  var revealed = Object.create(null);
+  var pendingRevokeId = null;
+  var toastTimer = null;
+  var lastFocused = null;
+
+  function getToken() { return localStorage.getItem(TOKEN_KEY); }
+  function setToken(t) { localStorage.setItem(TOKEN_KEY, t); }
+  function clearToken() { localStorage.removeItem(TOKEN_KEY); }
+
+  function $(id) { return document.getElementById(id); }
+
+  /* ------------------------------------------------------------------ *
+   *  API layer
+   * ------------------------------------------------------------------ */
+  function sessionError() {
+    var e = new Error('Your session has expired. Please sign in again.');
+    e.sessionExpired = true;
+    return e;
+  }
+
+  async function apiRequest(method, url, body, auth) {
+    if (auth === undefined) auth = true;
+
+    var headers = { 'Content-Type': 'application/json' };
+
+    if (auth) {
+      var token = getToken();
+      if (!token) { handleUnauthorized(); throw sessionError(); }
+      headers['Authorization'] = 'Bearer ' + token;
+    }
+
+    var options = { method: method, headers: headers };
+    if (body !== null && body !== undefined) options.body = JSON.stringify(body);
+
+    var res;
+    try {
+      res = await fetch(url, options);
+    } catch (networkErr) {
+      throw new Error('Network error. Please check your connection and try again.');
+    }
+
+    if (res.status === 401 && auth) {
+      handleUnauthorized();
+      throw sessionError();
+    }
+
+    if (!res.ok) {
+      var detail = 'Something went wrong. Please try again.';
+      try {
+        var payload = await res.json();
+        if (payload && typeof payload.detail === 'string') detail = payload.detail;
+      } catch (ignored) { /* non-JSON error body */ }
+      throw new Error(detail);
+    }
+
+    if (res.status === 204) return null;
+
+    var text = await res.text();
+    return text ? JSON.parse(text) : null;
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  UI helpers
+   * ------------------------------------------------------------------ */
+  function setAlert(id, message, type) {
+    var el = $(id);
+    if (!el) return;
+    if (!message) {
+      el.hidden = true;
+      el.textContent = '';
+      return;
+    }
+    el.textContent = message;
+    el.className = 'alert alert--' + (type || 'error');
+    el.hidden = false;
+  }
+
+  function setLoading(btn, isLoading, loadingText) {
+    if (!btn) return;
+    if (isLoading) {
+      if (!btn.dataset.originalText) btn.dataset.originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = loadingText || 'Please wait…';
+    } else {
+      btn.disabled = false;
+      if (btn.dataset.originalText) {
+        btn.textContent = btn.dataset.originalText;
+        delete btn.dataset.originalText;
+      }
+    }
+  }
+
+  function showToast(message, type) {
+    var el = $('toast');
+    el.textContent = message;
+    el.className = 'toast' + (type === 'error' ? ' toast--error' : '');
+    // Force a reflow so the transition replays on repeat messages.
+    void el.offsetWidth;
+    el.classList.add('is-visible');
+
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      el.classList.remove('is-visible');
+    }, 2600);
+  }
+
+  function formatDate(value) {
+    if (!value) return '—';
+    var d = new Date(value);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) +
+           ', ' +
+           d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function maskKey(key) {
+    if (!key) return '';
+    if (key.length <= 12) return new Array(key.length + 1).join('•');
+    return key.slice(0, 8) + '••••••••' + key.slice(-4);
+  }
+
+  async function copyToClipboard(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function makeButton(label, className, onClick, ariaLabel) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = className;
+    btn.textContent = label;
+    if (ariaLabel) btn.setAttribute('aria-label', ariaLabel);
+    btn.addEventListener('click', onClick);
+    return btn;
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  View switching
+   * ------------------------------------------------------------------ */
+  function showRegister() {
+    $('loginForm').hidden = true;
+    $('registerForm').hidden = false;
+    setAlert('loginMessage', '');
+    setAlert('registerMessage', '');
+    $('regName').focus();
+  }
+
+  function showLogin() {
+    $('registerForm').hidden = true;
+    $('loginForm').hidden = false;
+    setAlert('loginMessage', '');
+    setAlert('registerMessage', '');
+  }
+
+  function enterDashboard() {
+    $('authView').hidden = true;
+    $('dashboardView').hidden = false;
+    $('logoutBtn').hidden = false;
+    loadKeys();
+  }
+
+  function handleUnauthorized() {
+    clearToken();
+    currentKeys = [];
+    revealed = Object.create(null);
+    $('dashboardView').hidden = true;
+    $('logoutBtn').hidden = true;
+    $('authView').hidden = false;
+    showLogin();
+    setAlert('loginMessage', 'Your session has expired. Please sign in again.');
+  }
+
+  function logout() {
+    clearToken();
+    currentKeys = [];
+    revealed = Object.create(null);
+
+    $('dashboardView').hidden = true;
+    $('logoutBtn').hidden = true;
+    $('authView').hidden = false;
+
+    $('loginEmail').value = '';
+    $('loginPassword').value = '';
+    $('newKeyName').value = '';
+    $('keyList').innerHTML = '';
+
+    showLogin();
+    setAlert('loginMessage', '');
+    setAlert('dashboardMessage', '');
+    showToast('You have been signed out.');
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Authentication
+   * ------------------------------------------------------------------ */
+  async function handleRegister(event) {
+    event.preventDefault();
+
+    var name = $('regName').value.trim();
+    var email = $('regEmail').value.trim();
+    var password = $('regPassword').value;
+    var btn = $('registerSubmit');
+
+    setAlert('registerMessage', '');
+
+    if (!email || !password) {
+      setAlert('registerMessage', 'Email and password are required.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setAlert('registerMessage', 'Please enter a valid email address.');
+      return;
+    }
+    if (password.length < 8) {
+      setAlert('registerMessage', 'Password must be at least 8 characters long.');
+      return;
+    }
+
+    setLoading(btn, true, 'Creating account…');
+    try {
+      await apiRequest('POST', '/auth/register', {
+        email: email,
+        password: password,
+        name: name || null
+      }, false);
+
+      $('regName').value = '';
+      $('regEmail').value = '';
+      $('regPassword').value = '';
+
+      showLogin();
+      $('loginEmail').value = email;
+      setAlert('loginMessage', 'Account created. Please sign in to continue.', 'success');
+      $('loginPassword').focus();
+    } catch (err) {
+      setAlert('registerMessage', err.message);
+    } finally {
+      setLoading(btn, false);
+    }
+  }
+
+  async function handleLogin(event) {
+    event.preventDefault();
+
+    var email = $('loginEmail').value.trim();
+    var password = $('loginPassword').value;
+    var btn = $('loginSubmit');
+
+    setAlert('loginMessage', '');
+
+    if (!email || !password) {
+      setAlert('loginMessage', 'Email and password are required.');
+      return;
+    }
+
+    setLoading(btn, true, 'Signing in…');
+    try {
+      var formData = new URLSearchParams({ username: email, password: password });
+
+      var res;
+      try {
+        res = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData
         });
-    }
+      } catch (networkErr) {
+        throw new Error('Network error. Please check your connection and try again.');
+      }
 
-    function showMessage(containerId, msg, isError = false) {
-        const el = document.getElementById(containerId);
-        if (!msg) { el.innerHTML = ''; el.className = ''; return; }
-        el.innerHTML = msg;
-        el.className = 'alert ' + (isError ? 'alert-error' : 'alert-success');
-    }
-
-    function showRegister() {
-        document.getElementById('loginForm').classList.add('hidden');
-        document.getElementById('registerForm').classList.remove('hidden');
-        showMessage('loginMessage', '');
-        showMessage('registerMessage', '');
-    }
-
-    function showLogin() {
-        document.getElementById('registerForm').classList.add('hidden');
-        document.getElementById('loginForm').classList.remove('hidden');
-        showMessage('loginMessage', '');
-        showMessage('registerMessage', '');
-    }
-
-    async function register() {
-        const name = document.getElementById('regName').value;
-        const email = document.getElementById('regEmail').value;
-        const password = document.getElementById('regPassword').value;
-        if (!email || !password) {
-            showMessage('registerMessage', 'Email and password required', true);
-            return;
-        }
+      if (!res.ok) {
+        var detail = 'Incorrect email or password.';
         try {
-            await apiRequest('POST', '/auth/register', { email, password, name }, false);
-            showMessage('registerMessage', 'Registration successful! Please login.');
-            document.getElementById('regEmail').value = '';
-            document.getElementById('regPassword').value = '';
-            document.getElementById('regName').value = '';
-            showLogin();
-        } catch (err) {
-            showMessage('registerMessage', err.message, true);
-        }
+          var payload = await res.json();
+          if (payload && typeof payload.detail === 'string') detail = payload.detail;
+        } catch (ignored) { /* ignore */ }
+        throw new Error(detail);
+      }
+
+      var data = await res.json();
+      setToken(data.access_token);
+
+      $('loginPassword').value = '';
+      setAlert('loginMessage', '');
+      enterDashboard();
+    } catch (err) {
+      setAlert('loginMessage', err.message);
+    } finally {
+      setLoading(btn, false);
+    }
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Key rendering
+   * ------------------------------------------------------------------ */
+  function renderLoading() {
+    var container = $('keyList');
+    container.innerHTML = '';
+    for (var i = 0; i < 2; i++) {
+      var row = document.createElement('div');
+      row.className = 'skeleton-row';
+      var a = document.createElement('div');
+      a.className = 'skeleton skeleton--lg';
+      var b = document.createElement('div');
+      b.className = 'skeleton skeleton--sm';
+      row.appendChild(a);
+      row.appendChild(b);
+      container.appendChild(row);
+    }
+  }
+
+  function renderEmpty() {
+    var container = $('keyList');
+    container.innerHTML = '';
+
+    var wrap = document.createElement('div');
+    wrap.className = 'empty';
+
+    var title = document.createElement('p');
+    title.className = 'empty__title';
+    title.textContent = 'No API keys yet';
+
+    var text = document.createElement('p');
+    text.className = 'empty__text';
+    text.textContent = 'Generate your first key above to start making authenticated requests.';
+
+    wrap.appendChild(title);
+    wrap.appendChild(text);
+    container.appendChild(wrap);
+  }
+
+  function buildKeyRow(key) {
+    var id = String(key.id);
+    var isActive = !!key.active;
+    var isRevealed = !!revealed[id];
+
+    var row = document.createElement('div');
+    row.className = 'key-row';
+
+    /* ---- Main info ---- */
+    var main = document.createElement('div');
+    main.className = 'key-row__main';
+
+    var top = document.createElement('div');
+    top.className = 'key-row__top';
+
+    var nameEl = document.createElement('span');
+    nameEl.className = 'key-row__name';
+    nameEl.textContent = (key.name && String(key.name).trim()) ? key.name : 'Untitled key';
+    top.appendChild(nameEl);
+
+    var badge = document.createElement('span');
+    badge.className = 'badge ' + (isActive ? 'badge--active' : 'badge--revoked');
+    var dot = document.createElement('span');
+    dot.className = 'badge__dot';
+    badge.appendChild(dot);
+    badge.appendChild(document.createTextNode(isActive ? 'Active' : 'Revoked'));
+    top.appendChild(badge);
+
+    main.appendChild(top);
+
+    var code = document.createElement('code');
+    code.className = 'key-row__value';
+    code.textContent = isRevealed ? key.key : maskKey(key.key);
+    main.appendChild(code);
+
+    var meta = document.createElement('div');
+    meta.className = 'key-row__meta';
+    meta.textContent = 'Created ' + formatDate(key.created_at) +
+                       ' · Last used ' + (key.last_used ? formatDate(key.last_used) : 'Never');
+    main.appendChild(meta);
+
+    row.appendChild(main);
+
+    /* ---- Actions ---- */
+    var actions = document.createElement('div');
+    actions.className = 'key-row__actions';
+
+    var toggleBtn = makeButton(
+      isRevealed ? 'Hide' : 'Show',
+      'btn btn--ghost btn--sm',
+      function () {
+        if (revealed[id]) { delete revealed[id]; } else { revealed[id] = true; }
+        var nowRevealed = !!revealed[id];
+        code.textContent = nowRevealed ? key.key : maskKey(key.key);
+        toggleBtn.textContent = nowRevealed ? 'Hide' : 'Show';
+      }
+    );
+    toggleBtn.setAttribute('aria-label', (isRevealed ? 'Hide' : 'Show') + ' key value');
+    actions.appendChild(toggleBtn);
+
+    actions.appendChild(makeButton(
+      'Copy',
+      'btn btn--ghost btn--sm',
+      async function () {
+        var ok = await copyToClipboard(key.key);
+        showToast(ok ? 'API key copied to clipboard.' : 'Could not copy the key.', ok ? 'success' : 'error');
+      }
+    ));
+
+    if (isActive) {
+      actions.appendChild(makeButton(
+        'Revoke',
+        'btn btn--danger btn--sm',
+        function () { openRevokeModal(key); }
+      ));
     }
 
-    async function login() {
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        if (!email || !password) {
-            showMessage('loginMessage', 'Email and password required', true);
-            return;
-        }
-        const formData = new URLSearchParams({ username: email, password });
-        try {
-            const resp = await fetch('/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData
-            });
-            if (!resp.ok) {
-                const err = await resp.json();
-                throw new Error(err.detail || 'Login failed');
-            }
-            const data = await resp.json();
-            setToken(data.access_token);
-            document.getElementById('authSection').classList.add('hidden');
-            document.getElementById('dashboardSection').classList.remove('hidden');
-            document.getElementById('logoutBtn').classList.remove('hidden');
-            showMessage('loginMessage', '');
-            loadKeys();
-        } catch (err) {
-            showMessage('loginMessage', err.message, true);
-        }
-    }
+    row.appendChild(actions);
+    return row;
+  }
 
-    function logout() {
-        clearToken();
-        document.getElementById('authSection').classList.remove('hidden');
-        document.getElementById('dashboardSection').classList.add('hidden');
-        document.getElementById('logoutBtn').classList.add('hidden');
-        document.getElementById('loginEmail').value = '';
-        document.getElementById('loginPassword').value = '';
-        showMessage('loginMessage', '');
-        showMessage('dashboardMessage', '');
-    }
+  function renderKeys(keys) {
+    var container = $('keyList');
+    container.innerHTML = '';
 
-    async function loadKeys() {
-        const container = document.getElementById('keyList');
-        try {
-            const keys = await apiRequest('GET', '/keys');
-            if (keys.length === 0) {
-                container.innerHTML = '<p>No API keys yet. Generate one above.</p>';
-                return;
-            }
-            let html = '';
-            keys.forEach(k => {
-                const active = k.active ? '✅ Active' : '❌ Revoked';
-                const lastUsed = k.last_used ? new Date(k.last_used).toLocaleString() : 'Never';
-                html += `
-                    <div class="key-item">
-                        <div class="key-info">
-                            <div class="key-value">${k.key}</div>
-                            <div class="meta">
-                                ${k.name ? `Name: ${k.name} · ` : ''}
-                                Created: ${new Date(k.created_at).toLocaleString()} · 
-                                Last used: ${lastUsed} · 
-                                ${active}
-                            </div>
-                        </div>
-                        <div class="key-actions">
-                            <button class="copy-btn" onclick="copyKey('${k.key}')">Copy</button>
-                            ${k.active ? `<button class="danger" onclick="revokeKey('${k.id}')">Revoke</button>` : ''}
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-            showMessage('dashboardMessage', '');
-        } catch (err) {
-            showMessage('dashboardMessage', 'Failed to load keys: ' + err.message, true);
-        }
-    }
+    if (!keys.length) { renderEmpty(); return; }
 
-    async function generateKey() {
-        const name = document.getElementById('newKeyName').value.trim() || null;
-        try {
-            const result = await apiRequest('POST', '/keys/generate', { name });
-            showMessage('dashboardMessage', `✅ Key generated: ${result.key}`, false);
-            document.getElementById('newKeyName').value = '';
-            loadKeys();
-        } catch (err) {
-            showMessage('dashboardMessage', 'Error: ' + err.message, true);
-        }
-    }
+    var frag = document.createDocumentFragment();
+    keys.forEach(function (key) { frag.appendChild(buildKeyRow(key)); });
+    container.appendChild(frag);
+  }
 
-    async function revokeKey(keyId) {
-        if (!confirm('Revoke this key? It will stop working immediately.')) return;
-        try {
-            await apiRequest('DELETE', `/keys/${keyId}`);
-            showMessage('dashboardMessage', 'Key revoked successfully.', false);
-            loadKeys();
-        } catch (err) {
-            showMessage('dashboardMessage', 'Error: ' + err.message, true);
-        }
+  /* ------------------------------------------------------------------ *
+   *  Data operations
+   * ------------------------------------------------------------------ */
+  async function loadKeys() {
+    renderLoading();
+    try {
+      var keys = await apiRequest('GET', '/keys');
+      currentKeys = Array.isArray(keys) ? keys : [];
+      renderKeys(currentKeys);
+    } catch (err) {
+      if (err.sessionExpired) return;
+      $('keyList').innerHTML = '';
+      renderEmpty();
+      setAlert('dashboardMessage', 'Could not load your API keys. ' + err.message);
     }
+  }
 
-    function copyKey(key) {
-        navigator.clipboard.writeText(key).then(() => {
-            showMessage('dashboardMessage', 'Copied to clipboard!', false);
-            setTimeout(() => showMessage('dashboardMessage', ''), 2000);
-        }).catch(() => alert('Could not copy.'));
+  async function handleGenerateKey(event) {
+    event.preventDefault();
+
+    var input = $('newKeyName');
+    var name = input.value.trim();
+    var btn = $('generateBtn');
+
+    setAlert('dashboardMessage', '');
+    setLoading(btn, true, 'Generating…');
+
+    try {
+      await apiRequest('POST', '/keys/generate', { name: name || null });
+      input.value = '';
+      showToast('New API key generated.');
+      await loadKeys();
+    } catch (err) {
+      if (err.sessionExpired) return;
+      setAlert('dashboardMessage', err.message);
+    } finally {
+      setLoading(btn, false);
     }
+  }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const token = getToken();
-        if (token) {
-            document.getElementById('authSection').classList.add('hidden');
-            document.getElementById('dashboardSection').classList.remove('hidden');
-            document.getElementById('logoutBtn').classList.remove('hidden');
-            loadKeys();
-        }
-    });
+  /* ------------------------------------------------------------------ *
+   *  Revoke confirmation modal
+   * ------------------------------------------------------------------ */
+  function openRevokeModal(key) {
+    pendingRevokeId = String(key.id);
+    $('revokeKeyName').textContent = (key.name && String(key.name).trim())
+      ? '“' + key.name + '”'
+      : 'This key';
+
+    lastFocused = document.activeElement;
+    $('revokeModal').classList.add('is-open');
+    $('revokeConfirm').focus();
+  }
+
+  function closeRevokeModal() {
+    $('revokeModal').classList.remove('is-open');
+    pendingRevokeId = null;
+    if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+    lastFocused = null;
+  }
+
+  async function confirmRevoke() {
+    if (!pendingRevokeId) return;
+
+    var id = pendingRevokeId;
+    var btn = $('revokeConfirm');
+
+    setLoading(btn, true, 'Revoking…');
+    try {
+      await apiRequest('DELETE', '/keys/' + encodeURIComponent(id));
+      closeRevokeModal();
+      showToast('API key revoked.');
+      await loadKeys();
+    } catch (err) {
+      closeRevokeModal();
+      if (err.sessionExpired) return;
+      setAlert('dashboardMessage', err.message);
+    } finally {
+      setLoading(btn, false);
+    }
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Event wiring
+   * ------------------------------------------------------------------ */
+  $('loginForm').addEventListener('submit', handleLogin);
+  $('registerForm').addEventListener('submit', handleRegister);
+  $('createKeyForm').addEventListener('submit', handleGenerateKey);
+
+  $('logoutBtn').addEventListener('click', logout);
+
+  $('refreshBtn').addEventListener('click', async function () {
+    var btn = this;
+    setAlert('dashboardMessage', '');
+    setLoading(btn, true, 'Refreshing…');
+    await loadKeys();
+    setLoading(btn, false);
+  });
+
+  $('revokeCancel').addEventListener('click', closeRevokeModal);
+  $('revokeConfirm').addEventListener('click', confirmRevoke);
+
+  $('revokeModal').addEventListener('click', function (event) {
+    if (event.target === this) closeRevokeModal();
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && $('revokeModal').classList.contains('is-open')) {
+      closeRevokeModal();
+    }
+  });
+
+  /* ------------------------------------------------------------------ *
+   *  Boot
+   * ------------------------------------------------------------------ */
+  document.addEventListener('DOMContentLoaded', function () {
+    if (getToken()) {
+      enterDashboard();
+    } else {
+      showLogin();
+    }
+  });
+})();
 </script>
 </body>
 </html>
